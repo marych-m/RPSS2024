@@ -69,6 +69,11 @@ The script uses a prediction model created through Roboflow to detect cubes in t
     print(f'Black cubes: {black_count}')
     print(f'Total cubes: {orange_count + black_count}')
     ```
+![image](https://github.com/marych-m/RPSS2024/assets/150799028/ccc98b4f-d344-42a4-8fce-8bd4797d28aa)
+![image](https://github.com/marych-m/RPSS2024/assets/150799028/9067f26c-83d3-45cb-8a24-e182c5a4c615)
+![image](https://github.com/marych-m/RPSS2024/assets/150799028/1c572547-cabd-49cf-8db4-f2695ab3aac2)
+![image](https://github.com/marych-m/RPSS2024/assets/150799028/a5726844-b0f6-471d-9ce8-2d89d5713413)
+
 
 ### Pyramid Creation
 
