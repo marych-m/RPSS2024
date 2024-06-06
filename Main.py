@@ -34,7 +34,7 @@ for prediction in predictions:
 
     # Put text with class name and confidence
     text = f'{class_name}: {confidence:.2f}'
-    cv2.putText(original_image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(original_image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 8)
 
     # Count the cubes
     if class_name.lower() == 'orange':
@@ -66,12 +66,10 @@ def main():
 
     # Check if there are enough cubes
     if farbe == '0':  # Orange
-        farbe = 'orange'
         if orange_count < (hoehe * hoehe):
             print("Not enough orange cubes.")
             return
     elif farbe == '1':  # Black
-        farbe = 'black'
         if black_count < (hoehe * hoehe):
             print("Not enough black cubes.")
             return
