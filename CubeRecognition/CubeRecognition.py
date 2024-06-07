@@ -14,6 +14,21 @@ original_image = cv2.imread(image_path)
 
 # Get predictions
 predictions = model.predict(r'images\test1.jpg', confidence=40, overlap=30).json()['predictions']
+# Initialize an empty list to store the extracted information
+prediction_list = []
+
+# Iterate through each prediction
+for prediction in predictions:
+    # Extract color, x, and y coordinates from the prediction
+    color = prediction['class']
+    x = prediction['x']
+    y = prediction['y']
+
+    # Append color, x, and y coordinates as a tuple to the list
+    prediction_list.append((color, x, y))
+
+# Now, `prediction_list` contains color, x, and y coordinates for each prediction
+print(prediction_list)
 
 # Initialize counters for orange and black cubes
 orange_count = 0
