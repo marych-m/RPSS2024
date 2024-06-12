@@ -1,16 +1,48 @@
 from roboflow import Roboflow
+import cv2 as cv
+from math import atan2, cos, sin, sqrt, pi
+import numpy as np
+
+##Cube Recognition
 rf = Roboflow(api_key="lshByBqWKCtNXA5yjxTp")
 project = rf.workspace().project("robot-snkuk")
 model = project.version(1).model
 
-# infer on a local image
-print(model.predict(r'CubeRecognition\\images\\test3.jpg', confidence=40, overlap=30).json())
 
-import cv2
+# Initialize the webcam (use 0 for the default camera)
+cap = cv.VideoCapture(0)
+
+# Check if the webcam is opened correctly
+if not cap.isOpened():
+    print("Error: Could not open webcam.")
+    exit()
+
+# Capture a single frame from the webcam
+ret, frame = cap.read()
+
+# Release the webcam
+cap.release()
+
+# Check if the frame was captured correctly
+if not ret:
+    print("Error: Could not read frame from webcam.")
+    exit()
+
+# Define the path to save the captured image
+image_path = 'CubeRecognition\\images\\captured_image.jpg'
+#image_path = 'CubeRecognition\\images\\test3.jpg'
+
+# Save the captured frame to a file
+cv.imwrite(image_path, frame)
+
+# Load the saved image
+original_image = cv.imread(image_path)
+
+# infer on a local image
+print(model.predict(image_path, confidence=40, overlap=30).json())
 
 # Load the original image
-image_path = 'CubeRecognition\\images\\test3.jpg'
-original_image = cv2.imread(image_path)
+original_image = cv.imread(image_path)
 
 # Get predictions
 predictions = model.predict(r'CubeRecognition\\images\\test3.jpg', confidence=40, overlap=30).json()['predictions']
@@ -45,11 +77,11 @@ for prediction in predictions:
     y = int(y_center - h / 2)
 
     # Draw the bounding box
-    cv2.rectangle(original_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    cv.rectangle(original_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
     # Put text with class name and confidence
     text = f'{class_name}: {confidence:.2f}'
-    cv2.putText(original_image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv.putText(original_image, text, (x, y - 10), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     # Count the cubes
     if class_name.lower() == 'orange':
@@ -58,21 +90,17 @@ for prediction in predictions:
         black_count += 1
 
 # Display the image with bounding boxes
-resized_image = cv2.resize(original_image, (0, 0), fx=0.15, fy=0.15)  # Resize by 15% in both dimensions
-cv2.imshow('Object Detection', resized_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+resized_image = cv.resize(original_image, (0, 0), fx=0.15, fy=0.15)  # Resize by 15% in both dimensions
+cv.imshow('Object Detection', resized_image)
+cv.waitKey(0)
+cv.destroyAllWindows()
 
 # Print the results
 print(f'Orange cubes: {orange_count}')
 print(f'Black cubes: {black_count}')
 print(f'Total cubes: {orange_count + black_count}')
 
-import cv2 as cv
-from math import atan2, cos, sin, sqrt, pi
-import numpy as np
-
-
+##Angles around Z-axis
 def drawAxis(img, p_, q_, color, scale):
     p = list(p_)
     q = list(q_)
@@ -158,7 +186,7 @@ def getOrientation(pts, img):
     # Label with the rotation angle
     label = "  Rotation Angle: " + str(-int(np.rad2deg(angle)) - 90) + " degrees"
     label_position = (cntr[0], cntr[1])  # Position of the label
-    degrees = -int(np.rad2deg(angle)) - 90
+    degrees = abs(-int(np.rad2deg(angle)) - 90)
 
     textbox = cv.rectangle(img, (cntr[0], cntr[1] - 25), (cntr[0] + 250, cntr[1] + 10), (255, 255, 255), -1)
     cv.putText(img, label, (cntr[0], cntr[1]), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv.LINE_AA)
@@ -166,7 +194,7 @@ def getOrientation(pts, img):
     return angle, degrees, label_position
 
 # Read the image
-image = cv.imread(r'CubeRecognition\\images\\test3.jpg')
+image = cv.imread(image_path)
 
 # Convert the image to grayscale format
 image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
@@ -273,7 +301,7 @@ cv.destroyAllWindows()
 # Save the output image to the current directory
 cv.imwrite("output4.jpg", img)
 
-# Pyramid creation functions
+## Pyramid creation functions
 def create_pyramid(hoehe, farbe):
     for i in range(hoehe):
         abstaende = ' ' * (hoehe - i - 1)
