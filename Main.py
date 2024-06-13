@@ -105,7 +105,7 @@ print(f'Orange cubes: {orange_count}')
 print(f'Black cubes: {black_count}')
 print(f'Total cubes: {orange_count + black_count}')
 
-#############Here begins the new angle code###########################################
+##################################################################################################Here begins the new angle code###########################################
 # Convert the image to grayscale format
 image_gray = cv.cvtColor(original_image, cv.COLOR_BGR2GRAY)
 
