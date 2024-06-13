@@ -3,6 +3,7 @@ import numpy as np
 
 # Read the image
 image = cv2.imread(r'images\test1.jpg')
+image = cv2.resize(image, (0, 0), fx=2, fy=2)  # Resize by 15% in both dimensions
 
 # Convert the image to grayscale format
 img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

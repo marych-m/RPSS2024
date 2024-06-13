@@ -9,7 +9,7 @@ project = rf.workspace().project("robot-snkuk")
 model = project.version(1).model
 
 
-# Initialize the webcam (use 0 for the default camera)
+"""# Initialize the webcam (use 0 for the default camera)
 cap = cv.VideoCapture(0)
 
 # Check if the webcam is opened correctly
@@ -26,26 +26,28 @@ cap.release()
 # Check if the frame was captured correctly
 if not ret:
     print("Error: Could not read frame from webcam.")
-    exit()
+    exit()"""
 
 # Define the path to save the captured image
-image_path = 'captured_image.jpg'
+image_path = 'test.jpg'
 #image_path = 'CubeRecognition\\images\\test3.jpg'
 
-# Save the captured frame to a file
+"""# Save the captured frame to a file
 cv.imwrite(image_path, frame)
-
+"""
 # Load the saved image
 original_image = cv.imread(image_path)
+lim1 = 40
+lim2 = lim1 + 156
+lim3 = 267
+lim4 = lim3 + 255
+original_image = original_image[lim1:lim2, lim3:lim4]
 
 # infer on a local image
 print(model.predict(image_path, confidence=40, overlap=30).json())
 
-# Load the original image
-original_image = cv.imread(image_path)
-
 # Get predictions
-predictions = model.predict(r'captured_image.jpg', confidence=40, overlap=30).json()['predictions']
+predictions = model.predict(original_image, confidence=40, overlap=30).json()['predictions']
 # Initialize an empty list to store the extracted information
 prediction_list = []
 
@@ -75,6 +77,8 @@ for prediction in predictions:
     # Calculate top-left corner coordinates
     x = int(x_center - w / 2)
     y = int(y_center - h / 2)
+    w=int(w)
+    h=int(h)
 
     # Draw the bounding box
     cv.rectangle(original_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -90,8 +94,9 @@ for prediction in predictions:
         black_count += 1
 
 # Display the image with bounding boxes
-resized_image = cv.resize(original_image, (0, 0), fx=0.15, fy=0.15)  # Resize by 15% in both dimensions
+resized_image = cv.resize(original_image, (0, 0), fx=0.85, fy=0.85)  # Resize by 15% in both dimensions
 cv.imshow('Object Detection', resized_image)
+cv.imwrite("sample.jpg", resized_image)
 cv.waitKey(0)
 cv.destroyAllWindows()
 
@@ -100,107 +105,12 @@ print(f'Orange cubes: {orange_count}')
 print(f'Black cubes: {black_count}')
 print(f'Total cubes: {orange_count + black_count}')
 
-##Angles around Z-axis
-def drawAxis(img, p_, q_, color, scale):
-    p = list(p_)
-    q = list(q_)
-
-    # Calculate the angle between the two points
-    angle = atan2(p[1] - q[1], p[0] - q[0])
-
-    # Ensure the x-axis is the most horizontal option and goes to the right
-    if abs(angle) > pi / 2:
-        if angle > 0:
-            angle -= pi
-        else:
-            angle += pi
-
-    # Calculate the hypotenuse
-    hypotenuse = sqrt((p[1] - q[1]) * (p[1] - q[1]) + (p[0] - q[0]) * (p[0] - q[0]))
-
-    # Lengthen the arrow by a factor of scale
-    q[0] = p[0] - scale * hypotenuse * cos(angle)
-    q[1] = p[1] - scale * hypotenuse * sin(angle)
-
-    # Draw the line
-    cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), color, 3, cv.LINE_AA)
-
-    # Create the arrow hooks
-    p[0] = q[0] + 9 * cos(angle + pi / 4)
-    p[1] = q[1] + 9 * sin(angle + pi / 4)
-    cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), color, 3, cv.LINE_AA)
-
-    p[0] = q[0] + 9 * cos(angle - pi / 4)
-    p[1] = q[1] + 9 * sin(angle - pi / 4)
-    cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), color, 3, cv.LINE_AA)
-
-def getOrientation(pts, img):
-    ## [pca]
-    # Construct a buffer used by the pca analysis
-    sz = len(pts)
-    data_pts = np.empty((sz, 2), dtype=np.float64)
-    for i in range(data_pts.shape[0]):
-        data_pts[i, 0] = pts[i, 0, 0]
-        data_pts[i, 1] = pts[i, 0, 1]
-
-    # Perform PCA analysis
-    mean = np.empty((0))
-    mean, eigenvectors, eigenvalues = cv.PCACompute2(data_pts, mean)
-
-    # Store the center of the object
-    cntr = (int(mean[0, 0]), int(mean[0, 1]))
-    ## [pca]
-
-    ## [visualization]
-    # Draw the principal components
-    cv.circle(img, cntr, 3, (255, 0, 255), 2)
-
-    # Determine which eigenvector represents the most vertical line
-    if abs(eigenvectors[0, 1]) > abs(eigenvectors[1, 1]):
-        # Use eigenvector 0 as p1
-        p1 = (
-            cntr[0] + 0.02 * eigenvectors[0, 0] * eigenvalues[0, 0],
-            cntr[1] + 0.02 * eigenvectors[0, 1] * eigenvalues[0, 0]
-        )
-        p2 = (
-            cntr[0] - 0.02 * eigenvectors[1, 0] * eigenvalues[1, 0],
-            cntr[1] - 0.02 * eigenvectors[1, 1] * eigenvalues[1, 0]
-        )
-    else:
-        # Use eigenvector 1 as p1
-        p1 = (
-            cntr[0] + 0.02 * eigenvectors[1, 0] * eigenvalues[1, 0],
-            cntr[1] + 0.02 * eigenvectors[1, 1] * eigenvalues[1, 0]
-        )
-        p2 = (
-            cntr[0] - 0.02 * eigenvectors[0, 0] * eigenvalues[0, 0],
-            cntr[1] - 0.02 * eigenvectors[0, 1] * eigenvalues[0, 0]
-        )
-
-    drawAxis(img, cntr, p1, (255, 255, 0), 1)
-    drawAxis(img, cntr, p2, (0, 0, 255), 5)
-
-    angle = atan2(eigenvectors[0, 1], eigenvectors[0, 0])  # orientation in radians
-    ## [visualization]
-
-    # Label with the rotation angle
-    label = "  Rotation Angle: " + str(-int(np.rad2deg(angle)) - 90) + " degrees"
-    label_position = (cntr[0], cntr[1])  # Position of the label
-    degrees = abs(-int(np.rad2deg(angle)) - 90)
-
-    textbox = cv.rectangle(img, (cntr[0], cntr[1] - 25), (cntr[0] + 250, cntr[1] + 10), (255, 255, 255), -1)
-    cv.putText(img, label, (cntr[0], cntr[1]), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv.LINE_AA)
-
-    return angle, degrees, label_position
-
-# Read the image
-image = cv.imread(image_path)
-
+#############Here begins the new angle code###########################################
 # Convert the image to grayscale format
-image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+image_gray = cv.cvtColor(original_image, cv.COLOR_BGR2GRAY)
 
 # Apply binary thresholding
-ret, thresh = cv.threshold(image_gray, 120, 255, cv.THRESH_BINARY)
+ret, thresh = cv.threshold(image_gray, 111, 255, cv.THRESH_BINARY)
 
 # Invert the thresholded image to ensure objects are white on a black background
 thresh = cv.bitwise_not(thresh)
@@ -209,7 +119,7 @@ thresh = cv.bitwise_not(thresh)
 contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
 # Create a new image to draw rectangles
-img = np.zeros_like(image)
+img = np.zeros_like(original_image)
 
 # Draw rectangles around each contour
 for contour in contours:
@@ -220,81 +130,105 @@ for contour in contours:
     # Draw the rectangle on the new image
     cv.drawContours(img, [box], 0, (255, 255, 255), -1)  # White rectangles
 
-cv.imshow('Rectangles Image', img)
+cv.imwrite('bw.jpg', img)
 
-# Convert image to grayscale
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-cv.imwrite("gray4.jpg", gray)
-# Convert image to binary
-_, bw = cv.threshold(gray, 50, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
-cv.imwrite("bw4.jpg", bw)
-# Find all the contours in the thresholded image
-contours, _ = cv.findContours(bw, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+import cv2
+import numpy as np
 
-# Store labels and positions
-label_positions = []
+def get_rotation_angles():
+    # Read the original image
+    image = img
 
-for i, c in enumerate(contours):
+    # Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Calculate the area of each contour
-    area = cv.contourArea(c)
+    # Apply adaptive thresholding to get a binary image
+    binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
-    # Ignore contours that are too small or too large
-    if area < 90000 or 10000000 < area:
-        continue
+    # Find contours
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Draw each contour only for visualisation purposes
-    cv.drawContours(img, contours, i, (0, 0, 255), 2)
+    # List to store detected rectangles with their center coordinates and angles
+    detected_rectangles = []
 
-    # Find the orientation of each shape
-    angle, degrees, label_position = getOrientation(c, img)
-    label_positions.append((degrees, label_position))  # Store angle and label position
-print(label_positions)
-for degrees, position in label_positions:
-    print("Angle: {} degrees, Position: {}".format(degrees, position))
+    for contour in contours:
+        # Approximate the contour to a polygon
+        perimeter = cv2.arcLength(contour, True)
+        approx = cv2.approxPolyDP(contour, 0.04 * perimeter, True)
 
-# Define the maximum search radius
-max_radius = 3000  # Adjust as needed
+        # Check if the contour is a quadrilateral (rectangle or square)
+        if len(approx) == 4:
+            # Get the minimum area bounding rectangle
+            rect = cv2.minAreaRect(contour)
 
-# Initialize an empty list to store the combined results
-combined_list = []
+            # Get the rotation angle from the rectangle
+            angle = rect[2]
 
-# Iterate through each element in prediction_list
-for prediction in prediction_list:
-    # Extract the coordinates of the prediction
-    x_pred, y_pred = prediction[1], prediction[2]
+            # Correct the angle to be within [0, 180]
+            if angle < -45:
+                angle = 90 + angle
 
-    # Iterate through each element in label_positions
-    for label_position in label_positions:
-        # Extract the coordinates of the label_position
-        x_label, y_label = label_position[1]
+            # Calculate the center coordinates
+            center_x, center_y = int(rect[0][0]), int(rect[0][1])
 
-        # Initialize the search radius
-        radius = 1
+            # Append rectangle details to the list
+            rectangle_data = (angle, center_x, center_y)
+            detected_rectangles.append(rectangle_data)
 
-        # Search in a gradually increasing radius until a match is found or max_radius is reached
-        while radius <= max_radius:
-            # Check if the coordinates are sufficiently close
-            if abs(x_pred - x_label) < radius and abs(y_pred - y_label) < radius:
-                # If the coordinates are close, combine the elements
-                combined_list.append(prediction + (label_position[0],))
-                break  # Exit the inner loop after finding a match
+            # Draw the rectangle on the original image
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+            cv2.drawContours(image, [box], 0, (0, 255, 0), 2)
 
-            # Increment the search radius
-            radius += 1
+            # Draw the center (optional)
+            cv2.circle(image, (center_x, center_y), 5, (0, 0, 255), -1)
 
-        # If a match is found, exit the outer loop
-        if len(combined_list) > len(prediction_list):
-            break
+    # Display the image with detected rectangles
+    cv2.imshow('Detected Rectangles', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    # If a match is found, exit the outer loop
-    if len(combined_list) > len(prediction_list):
-        break
+    return detected_rectangles
 
-# Now, `combined_list` contains the combined elements from prediction_list and label_positions
-print(combined_list)
+# Example usage
+image_path = 'test1 (2).jpg'  # Replace with your image path
+rectangles = get_rotation_angles()
 
-cv.imshow('Output Image', img)
+# Print the final list of detected rectangles data
+print(rectangles)
+import math
+
+def merge_lists(prediction_list, rectangles, max_distance=10):
+    merged_list = []
+
+    for prediction in prediction_list:
+        color, x_pred, y_pred = prediction
+        closest_rect = None
+        min_distance = float('inf')
+
+        for rect in rectangles:
+            angle, x_rect, y_rect = rect
+            # Calculate distance between prediction and rectangle
+            distance = math.sqrt((x_pred - x_rect) ** 2 + (y_pred - y_rect) ** 2)
+
+            # Check if distance is within the threshold and smaller than the current minimum
+            if distance <= max_distance and distance < min_distance:
+                closest_rect = rect
+                min_distance = distance
+
+        if closest_rect is not None:
+            merged_list.append((color, x_pred, y_pred, closest_rect[0]))  # Append angle from closest rectangle
+        else:
+            merged_list.append((color, x_pred, y_pred, None))  # If no matching rectangle found, append None
+
+    return merged_list
+
+merged_list = merge_lists(prediction_list, rectangles, max_distance=15)  # Adjust max_distance as needed
+
+# Print the merged list
+for item in merged_list:
+    print(item)
+
 cv.waitKey(0)
 cv.destroyAllWindows()
 

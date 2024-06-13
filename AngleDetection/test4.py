@@ -97,13 +97,20 @@ def getOrientation(pts, img):
 
 
 # Read the image
-image = cv.imread(r'images\test1.jpg')
+image = cv.imread(r'images\test.jpg')
+
+lim1 = 40
+lim2 = lim1 + 156
+lim3 = 267
+lim4 = lim3 + 255
+image = image[lim1:lim2, lim3:lim4]
+image = cv.resize(image, (0, 0), fx=2, fy=2)  # Resize by 15% in both dimensions
 
 # Convert the image to grayscale format
 image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
 # Apply binary thresholding
-ret, thresh = cv.threshold(image_gray, 120, 255, cv.THRESH_BINARY)
+ret, thresh = cv.threshold(image_gray, 111, 255, cv.THRESH_BINARY)
 
 # Invert the thresholded image to ensure objects are white on a black background
 thresh = cv.bitwise_not(thresh)
@@ -141,9 +148,9 @@ for i, c in enumerate(contours):
 
     # Calculate the area of each contour
     area = cv.contourArea(c)
-
     # Ignore contours that are too small or too large
-    if area < 90000 or 10000000 < area:
+    if area < 9000000000 and 10 < area:
+        print(area)
         continue
 
     # Draw each contour only for visualisation purposes

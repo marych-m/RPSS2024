@@ -1,0 +1,29 @@
+names:
+- '0'
+- '10'
+- '15'
+- '20'
+- '25'
+- '30'
+- '35'
+- '40'
+- '45'
+- '5'
+- '50'
+- '55'
+- '60'
+- '65'
+- '70'
+- '75'
+- '80'
+- '85'
+nc: 18
+roboflow:
+  license: Private
+  project: angles-1riac
+  url: https://app.roboflow.com/robot-gkd4a/angles-1riac/1
+  version: 1
+  workspace: robot-gkd4a
+test: ../test/images
+train: Angles-1/train/images
+val: Angles-1/valid/images
