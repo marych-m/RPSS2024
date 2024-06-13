@@ -29,7 +29,7 @@ if not ret:
     exit()
 
 # Define the path to save the captured image
-image_path = 'CubeRecognition\\images\\captured_image.jpg'
+image_path = 'captured_image.jpg'
 #image_path = 'CubeRecognition\\images\\test3.jpg'
 
 # Save the captured frame to a file
@@ -45,7 +45,7 @@ print(model.predict(image_path, confidence=40, overlap=30).json())
 original_image = cv.imread(image_path)
 
 # Get predictions
-predictions = model.predict(r'CubeRecognition\\images\\test3.jpg', confidence=40, overlap=30).json()['predictions']
+predictions = model.predict(r'captured_image.jpg', confidence=40, overlap=30).json()['predictions']
 # Initialize an empty list to store the extracted information
 prediction_list = []
 
